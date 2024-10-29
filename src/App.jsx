@@ -5,6 +5,8 @@ import Agenda from './views/Agenda/Agenda';
 import Pacientes from './views/Agenda/components/Pacientes/Pacientes';
 import Personal from './views/Agenda/components/Personal/Personal';
 import Citas from './views/Agenda/components/Citas/Citas';
+import CitasMedicas from './views/Personal-Medico/Citas';
+
 
 const App = () => {
     return (
@@ -15,6 +17,7 @@ const App = () => {
                 <Route path="enfermeria" element={<Personal />} />
                 <Route path="citas" element={<Citas />} />
             </Route>
+            <Route path="/citas-medicas" element={<CitasMedicas />} />
         </Routes>
     );
 };

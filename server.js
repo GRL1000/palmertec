@@ -32,19 +32,21 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-
 // Ruta de registro
 app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { nombre, email, password, rol_id } = req.body; 
+    console.log('Datos recibidos:', { nombre, email, password, rol_id }); // Agrega este log
     try {
-        const result = await pool.query('INSERT INTO usuario (username, password) VALUES ($1, $2) RETURNING *', [username, password]);
+        const result = await pool.query(
+            'INSERT INTO usuario (nombre, email, password, rol_id) VALUES ($1, $2, $3, $4) RETURNING *',
+            [nombre, email, password, rol_id]
+        );
         res.json({ message: 'Registro exitoso', user: result.rows[0] });
     } catch (err) {
         console.error('Error en el registro:', err);
         res.status(500).send('Error en el servidor');
     }
 });
-
 
 //Obtener usuarios
 app.get('/api/usuarios', async (req, res) => {
@@ -67,7 +69,6 @@ app.get('/api/pacientes', async (req, res) => {
     }
 });
 
-
 // Crear un nuevo paciente
 app.post('/api/paciente', async (req, res) => {
     const { nombre, edad, telefono, estado, alcaldia, usuario_id } = req.body;
@@ -83,6 +84,33 @@ app.post('/api/paciente', async (req, res) => {
     }
 });
 
+// Actualizar un paciente
+app.put('/api/paciente/:id_paciente', async (req, res) => {
+    const { id_paciente } = req.params;
+    const { nombre, edad, telefono, estado, alcaldia } = req.body;
+    try {
+        const result = await pool.query(
+            'UPDATE paciente SET nombre = $1, edad = $2, telefono = $3, estado = $4, alcaldia = $5 WHERE id_paciente = $6 RETURNING *',
+            [nombre, edad, telefono, estado, alcaldia, id_paciente]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error al actualizar paciente:', err);
+        res.status(500).send('Error al actualizar paciente');
+    }
+});
+
+// Eliminar un paciente
+app.delete('/api/paciente/:id_paciente', async (req, res) => {
+    const { id_paciente } = req.params;
+    try {
+        await pool.query('DELETE FROM paciente WHERE id_paciente = $1', [id_paciente]);
+        res.json({ message: 'Paciente eliminado exitosamente' });
+    } catch (err) {
+        console.error('Error al eliminar paciente:', err);
+        res.status(500).send('Error al eliminar paciente');
+    }
+});
 
 // Obtener todo el personal medico
 app.get('/api/personal-medico', async (req, res) => {
@@ -96,16 +124,44 @@ app.get('/api/personal-medico', async (req, res) => {
 
 // Crear un nuevo personal
 app.post('/api/personal', async (req, res) => {
-    const { nombre, estado, alcaldia, especialidad, horas_laboradas, usuario_id } = req.body;
+    const { nombre, email, estado, alcaldia, especialidad, horas_laboradas, usuario_id } = req.body; // Asegúrate de incluir email
     try {
         const result = await pool.query(
-            'INSERT INTO personal_consultorio (nombre, estado, alcaldia, especialidad, horas_laboradas, usuario_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [nombre, estado, alcaldia, especialidad, horas_laboradas, usuario_id]
+            'INSERT INTO personal_consultorio (nombre, email, estado, alcaldia, especialidad, horas_laboradas, usuario_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [nombre, email, estado, alcaldia, especialidad, horas_laboradas, usuario_id] // Asegúrate de pasar el email aquí
         );
         res.json(result.rows[0]);
     } catch (err) {
-        console.error('Error al crear personal:', err)
+        console.error('Error al crear personal:', err);
         res.status(500).send('Error al crear personal');
+    }
+});
+
+// Actualizar un personal
+app.put('/api/personal/:id_personal', async (req, res) => {
+    const { id_personal } = req.params;
+    const { nombre, email, estado, alcaldia, especialidad, horas_laboradas } = req.body; // Asegúrate de incluir todos los campos necesarios
+    try {
+        const result = await pool.query(
+            'UPDATE personal_consultorio SET nombre = $1, email = $2, estado = $3, alcaldia = $4, especialidad = $5, horas_laboradas = $6 WHERE id_personal = $7 RETURNING *',
+            [nombre, email, estado, alcaldia, especialidad, horas_laboradas, id_personal]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error al actualizar personal:', err);
+        res.status(500).send('Error al actualizar personal');
+    }
+});
+
+// Eliminar un personal
+app.delete('/api/personal/:id_personal', async (req, res) => {
+    const { id_personal } = req.params;
+    try {
+        await pool.query('DELETE FROM personal_consultorio WHERE id_personal = $1', [id_personal]);
+        res.json({ message: 'Miembro del personal eliminado exitosamente' });
+    } catch (err) {
+        console.error('Error al eliminar miembro del personal:', err);
+        res.status(500).send('Error al eliminar miembro del personal');
     }
 });
 
