@@ -85,20 +85,21 @@ app.post('/api/paciente', async (req, res) => {
 });
 
 // Actualizar un paciente
-app.put('/api/paciente/:id_paciente', async (req, res) => {
-    const { id_paciente } = req.params;
-    const { nombre, edad, telefono, estado, alcaldia } = req.body;
+app.post('/api/personal', async (req, res) => {
+    console.log("Datos recibidos en el servidor:", req.body); // Verifica que usuario_id siempre esté presente
+    const { nombre, email, estado, alcaldia, especialidad, horas_laboradas, usuario_id } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE paciente SET nombre = $1, edad = $2, telefono = $3, estado = $4, alcaldia = $5 WHERE id_paciente = $6 RETURNING *',
-            [nombre, edad, telefono, estado, alcaldia, id_paciente]
+            'INSERT INTO personal_consultorio (nombre, email, estado, alcaldia, especialidad, horas_laboradas, usuario_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [nombre, email, estado, alcaldia, especialidad, horas_laboradas, usuario_id]
         );
         res.json(result.rows[0]);
     } catch (err) {
-        console.error('Error al actualizar paciente:', err);
-        res.status(500).send('Error al actualizar paciente');
+        console.error('Error al crear personal:', err);
+        res.status(500).send('Error al crear personal');
     }
 });
+
 
 // Eliminar un paciente
 app.delete('/api/paciente/:id_paciente', async (req, res) => {
@@ -165,6 +166,20 @@ app.delete('/api/personal/:id_personal', async (req, res) => {
     }
 });
 
+// Obtener citas
+app.get('/api/citas', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM cita');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).send('Error en el servidor');
+    }
+});
+
+app.listen(5000, () => {
+    console.log('Servidor corriendo en el puerto 5000');
+});
+
 // Crear una cita médica
 app.post('/api/cita', async (req, res) => {
     const { id_paciente, id_personal, indicaciones, fecha, cotizacion } = req.body;
@@ -180,16 +195,35 @@ app.post('/api/cita', async (req, res) => {
     }
 });
 
-// Obtener citas
-app.get('/api/citas', async (req, res) => {
+// Editar una cita médica
+app.put('/api/cita/:id', async (req, res) => {
+    const { id } = req.params;
+    const { id_paciente, id_personal, indicaciones, fecha, cotizacion } = req.body;
     try {
-        const result = await pool.query('SELECT * FROM cita');
-        res.json(result.rows);
+        const result = await pool.query(
+            'UPDATE cita SET id_paciente = $1, id_personal = $2, indicaciones = $3, fecha = $4, cotizacion = $5 WHERE id_cita = $6 RETURNING *',
+            [id_paciente, id_personal, indicaciones, fecha, cotizacion, id]
+        );
+        res.json(result.rows[0]);
     } catch (err) {
-        res.status(500).send('Error en el servidor');
+        console.error('Error al editar cita:', err)
+        res.status(500).send('Error al editar cita');
     }
 });
 
-app.listen(5000, () => {
-    console.log('Servidor corriendo en el puerto 5000');
+// Eliminar una cita médica
+app.delete('/api/cita/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM cita WHERE id_cita = $1 RETURNING *', [id]);
+        if (result.rowCount === 0) {
+            return res.status(404).send('Cita no encontrada');
+        }
+        res.send('Cita eliminada');
+    } catch (err) {
+        console.error('Error al eliminar cita:', err)
+        res.status(500).send('Error al eliminar cita');
+    }
 });
+
+

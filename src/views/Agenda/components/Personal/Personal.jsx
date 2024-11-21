@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Personal.css";
+import Buscar from '../../../../assets/icons/buscar.png';
 
 function Personal() {
   const [personal, setPersonal] = useState([]);
@@ -21,7 +22,9 @@ function Personal() {
   useEffect(() => {
     const fetchPersonal = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/personal-medico");
+        const response = await fetch(
+          "http://localhost:5000/api/personal-medico"
+        );
         if (!response.ok) {
           throw new Error("Error en la respuesta de la API");
         }
@@ -53,17 +56,21 @@ function Personal() {
   const handleFormSubmit = async (event) => {
     event.preventDefault();
     try {
-      const method = formData.id_personal ? "PUT" : "POST";
-      const url = formData.id_personal 
-        ? `http://localhost:5000/api/personal/${formData.id_personal}`
+      const formDataWithUserId = { ...formData, usuario_id: 2 }; // Asegura que usuario_id esté definido
+
+      const method = formDataWithUserId.id_personal ? "PUT" : "POST";
+      const url = formDataWithUserId.id_personal
+        ? `http://localhost:5000/api/personal/${formDataWithUserId.id_personal}`
         : "http://localhost:5000/api/personal";
+
+      console.log("FormData antes de enviar:", formDataWithUserId); // Asegúrate de que usuario_id sea siempre 2
 
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formDataWithUserId),
       });
       if (!response.ok) {
         throw new Error("Error al guardar el personal");
@@ -72,10 +79,23 @@ function Personal() {
       if (method === "POST") {
         setPersonal([...personal, updatedPersonal]);
       } else {
-        setPersonal(personal.map((p) => (p.id_personal === updatedPersonal.id_personal ? updatedPersonal : p))); // Actualizar personal
+        setPersonal(
+          personal.map((p) =>
+            p.id_personal === updatedPersonal.id_personal ? updatedPersonal : p
+          )
+        );
       }
       setIsModalOpen(false);
-      setFormData({ id_personal: null, nombre: "", email: "", estado: "", alcaldia: "", especialidad: "", horas_laboradas: 0 }); // Reiniciar formulario
+      setFormData({
+        id_personal: null,
+        nombre: "",
+        email: "",
+        estado: "",
+        alcaldia: "",
+        especialidad: "",
+        horas_laboradas: 0,
+        usuario_id: 2, // Reiniciar con usuario_id
+      });
     } catch (error) {
       console.error(error);
     }
@@ -111,25 +131,77 @@ function Personal() {
           onChange={handleSearchChange}
         />
         <button className="search-button">
-          <img src="ruta/a/icono-busqueda.png" alt="Buscar" />
+          <img src={Buscar} alt="Buscar" />
+        </button>
+        <button className="add-button" onClick={() => setIsModalOpen(true)}>
+          Registrar Nuevo Personal
         </button>
       </div>
-      <button onClick={() => setIsModalOpen(true)}>Registrar Nuevo Personal</button>
+
       {isModalOpen && (
         <div className="modal">
-          <h3>{formData.id_personal ? "Editar Personal" : "Registrar Nuevo Personal"}</h3>
+          <h3>
+            {formData.id_personal
+              ? "Editar Personal"
+              : "Registrar Nuevo Personal"}
+          </h3>
           <form onSubmit={handleFormSubmit}>
-            <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleInputChange} required />
-            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required />
-            <input type="text" name="estado" placeholder="Estado" value={formData.estado} onChange={handleInputChange} required />
-            <input type="text" name="alcaldia" placeholder="Alcaldía" value={formData.alcaldia} onChange={handleInputChange} required />
-            <input type="text" name="especialidad" placeholder="Especialidad" value={formData.especialidad} onChange={handleInputChange} required />
-            <input type="number" name="horas_laboradas" placeholder="Horas Laboradas" value={formData.horas_laboradas} onChange={handleInputChange} required />
+            <input
+              type="text"
+              name="nombre"
+              placeholder="Nombre"
+              value={formData.nombre}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="text"
+              name="estado"
+              placeholder="Estado"
+              value={formData.estado}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="text"
+              name="alcaldia"
+              placeholder="Alcaldía"
+              value={formData.alcaldia}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="text"
+              name="especialidad"
+              placeholder="Especialidad"
+              value={formData.especialidad}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="number"
+              name="horas_laboradas"
+              placeholder="Horas Laboradas"
+              value={formData.horas_laboradas}
+              onChange={handleInputChange}
+              required
+            />
             <button type="submit">Guardar</button>
-            <button type="button" onClick={() => setIsModalOpen(false)}>Cancelar</button>
+            <button type="button" onClick={() => setIsModalOpen(false)}>
+              Cancelar
+            </button>
           </form>
         </div>
       )}
+
       <table className="personal-table">
         <thead>
           <tr>
@@ -153,8 +225,15 @@ function Personal() {
                 <td>{p.especialidad}</td>
                 <td>{p.horas_laboradas}</td>
                 <td>
-                  <button onClick={() => handleEdit(p)}>Editar</button>
-                  <button onClick={() => handleDelete(p.id_personal)}>Eliminar</button>
+                  <button className="edit-button" onClick={() => handleEdit(p)}>
+                    Editar
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDelete(p.id_personal)}
+                  >
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))

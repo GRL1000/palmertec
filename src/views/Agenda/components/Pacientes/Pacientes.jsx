@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PacienteModal from './PacienteModal';
+import Buscar from '../../../../assets/icons/buscar.png';
 import './Pacientes.css';
 
 function Pacientes() {
@@ -87,7 +88,7 @@ function Pacientes() {
                     onChange={handleSearchChange}
                 />
                 <button className="search-button">
-                    <img src="ruta/a/icono-busqueda.png" alt="Buscar" />
+                    <img src={Buscar} alt="Buscar" />
                 </button>
                 <button className="add-button" onClick={handleAddPaciente}>Registrar Paciente</button>
             </div>
@@ -114,8 +115,8 @@ function Pacientes() {
                                 <td>{paciente.estado}</td>
                                 <td>{paciente.alcaldia}</td>
                                 <td>
-                                    <button onClick={() => handleEditPaciente(paciente)}>Editar</button>
-                                    <button onClick={() => handleDeletePaciente(paciente.id_paciente)}>Eliminar</button>
+                                <button className="edit-button" onClick={() => handleEditPaciente(paciente)}>Editar</button>
+                                <button className="delete-button" onClick={() => handleDeletePaciente(paciente.id_paciente)}>Eliminar</button>
                                 </td>
                             </tr>
                         ))
